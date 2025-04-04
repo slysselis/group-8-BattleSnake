@@ -16,6 +16,8 @@ import runServer from './server.js';
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
 
+
+
 function info() {
   console.log("INFO");
 
@@ -25,6 +27,7 @@ function info() {
     color: "#0f0e42", // snake color
     head: "cosmic-horror",  // snake head
     tail: "hook",  // snake tail
+
   };
 }
 
@@ -76,6 +79,7 @@ function move(gameState) {
 
   // TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
   // opponents = gameState.board.snakes;
+
     // Prevent collisions with other snakes
     opponents.forEach(snake => {
       snake.body.forEach(segment => {
@@ -85,6 +89,7 @@ function move(gameState) {
         if (segment.y === myHead.y + 1 && segment.x === myHead.x) isMoveSafe.up = false;
       });
     });  
+
 
   // Are there any safe moves left?
   const safeMoves = Object.keys(isMoveSafe).filter(key => isMoveSafe[key]);
