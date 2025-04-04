@@ -15,19 +15,15 @@ import runServer from './server.js';
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
-
-
-
 function info() {
   console.log("INFO");
 
   return {
     apiversion: "1",
-    author: "Sokos",       // Battlesnake Username
-    color: "#0f0e42", // snake color
-    head: "cosmic-horror",  // snake head
-    tail: "hook",  // snake tail
-
+    author: "",       // TODO: Your Battlesnake Username
+    color: "#888888", // TODO: Choose color
+    head: "default",  // TODO: Choose head
+    tail: "default",  // TODO: Choose tail
   };
 }
 
@@ -74,22 +70,16 @@ function move(gameState) {
   // boardWidth = gameState.board.width;
   // boardHeight = gameState.board.height;
 
-  // TODO: Step 2 - Prevent your Battlesnake from colliding with itself
-  // myBody = gameState.you.body;
+  // Prevent self-collision
+  myBody.forEach(segment => {
+    if (segment.x === myHead.x - 1 && segment.y === myHead.y) isMoveSafe.left = false;
+    if (segment.x === myHead.x + 1 && segment.y === myHead.y) isMoveSafe.right = false;
+    if (segment.y === myHead.y - 1 && segment.x === myHead.x) isMoveSafe.down = false;
+    if (segment.y === myHead.y + 1 && segment.x === myHead.x) isMoveSafe.up = false;
+  });
 
   // TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
   // opponents = gameState.board.snakes;
-
-    // Prevent collisions with other snakes
-    opponents.forEach(snake => {
-      snake.body.forEach(segment => {
-        if (segment.x === myHead.x - 1 && segment.y === myHead.y) isMoveSafe.left = false;
-        if (segment.x === myHead.x + 1 && segment.y === myHead.y) isMoveSafe.right = false;
-        if (segment.y === myHead.y - 1 && segment.x === myHead.x) isMoveSafe.down = false;
-        if (segment.y === myHead.y + 1 && segment.x === myHead.x) isMoveSafe.up = false;
-      });
-    });  
-
 
   // Are there any safe moves left?
   const safeMoves = Object.keys(isMoveSafe).filter(key => isMoveSafe[key]);
