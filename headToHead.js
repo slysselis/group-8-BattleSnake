@@ -37,4 +37,4 @@ function avoidHeadToHead(gameState, isMoveSafe) {
   
     return isMoveSafe;
   }
-  export avoidHeadToHead;
+  export default avoidHeadToHead;
