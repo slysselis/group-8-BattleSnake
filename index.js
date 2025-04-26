@@ -11,9 +11,13 @@
 // For more info see docs.battlesnake.com
 
 import runServer from './server.js';
-import chalk from 'chalk'; 
-import preventCollisions from './preventCollisions.js';
-import snakeMovement from './snakeMovement.js';
+import chalk from 'chalk';
+import preventBorderCollision from './preventBorderCollision.js';
+import preventSelfCollision from './preventSelfCollision.js';
+import preventSnakeCollision from './preventSnakeCollision.js';
+import preventBackwardsMovement from './preventBackwardsMovement.js';
+import moveTowardFood from './moveTowardFood.js';
+import headToHead from './headToHead.js';
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
