@@ -12,7 +12,8 @@
 
 import runServer from './server.js';
 import chalk from 'chalk'; 
-
+import preventCollisions from './preventCollisions.js';
+import snakeMovement from './snakeMovement.js';
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
@@ -22,9 +23,9 @@ function info() {
 return {
     apiversion: "1",
     author: "Sokos",       // Battlesnake Username
-    color: "#0f0e42", // snake color
-    head: "cosmic-horror",  // snake head
-    tail: "hook",  // snake tail
+    color: "#0f0e42",      // snake color
+    head: "cosmic-horror", // snake head
+    tail: "hook",          // snake tail
   };
 }
 
