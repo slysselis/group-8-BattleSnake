@@ -1,3 +1,4 @@
+function (preventCollisions){
   // Prevent self-collision
   myBody.forEach(segment => {
     if (segment.x === myHead.x - 1 && segment.y === myHead.y) isMoveSafe.left = false;
@@ -18,3 +19,5 @@
 
   // Choose a random move from the safe moves
   const nextMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+}
+export default preventCollisions;
