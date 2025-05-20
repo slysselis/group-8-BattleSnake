@@ -11,20 +11,26 @@
 // For more info see docs.battlesnake.com
 
 import runServer from './server.js';
-
+import chalk from 'chalk';
+import preventBorderCollision from './preventBorderCollision.js';
+import preventSelfCollision from './preventSelfCollision.js';
+import preventSnakeCollision from './preventSnakeCollision.js';
+import preventBackwardsMovement from './preventBackwardsMovement.js';
+import moveTowardFood from './moveTowardFood.js';
+import headToHead from './headToHead.js';
+import allowTailMovement from './allowTailMovement.js';
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
-
 function info() {
   console.log("INFO");
 
-  return {
+return {
     apiversion: "1",
-    author: "Sokos",       // Battlesnake Username
-    color: "#0f0e42", // snake color
-    head: "cosmic-horror",  // snake head
-    tail: "hook",  // snake tail
+	author: "Antonis",       // Battlesnake Username
+    color: "f4260a", // snake color
+    head: "dragon",  // snake head
+    tail: "swirl",  // snake tail
   };
 }
 
@@ -42,55 +48,42 @@ function end(gameState) {
 // Valid moves are "up", "down", "left", or "right"
 // See https://docs.battlesnake.com/api/example-move for available data
 function move(gameState) {
-
+  console.log(`MOVE ${gameState.turn}: Beginning turn`);
+  
+  // Initialize safe moves
   let isMoveSafe = {
     up: true,
     down: true,
     left: true,
     right: true
   };
-
-  // We've included code to prevent your Battlesnake from moving backwards
-  const myHead = gameState.you.body[0];
-  const myNeck = gameState.you.body[1];
-
-  if (myNeck.x < myHead.x) {        // Neck is left of head, don't move left
-    isMoveSafe.left = false;
-
-  } else if (myNeck.x > myHead.x) { // Neck is right of head, don't move right
-    isMoveSafe.right = false;
-
-  } else if (myNeck.y < myHead.y) { // Neck is below head, don't move down
-    isMoveSafe.down = false;
-
-  } else if (myNeck.y > myHead.y) { // Neck is above head, don't move up
-    isMoveSafe.up = false;
+  
+  // Apply all collision prevention
+  isMoveSafe = preventBackwardsMovement(gameState, isMoveSafe);
+  isMoveSafe = preventBorderCollision(gameState, isMoveSafe);
+  isMoveSafe = preventSelfCollision(gameState, isMoveSafe);
+  isMoveSafe = preventSnakeCollision(gameState, isMoveSafe);
+  
+  // Check for head-to-head opportunities/dangers
+  isMoveSafe = headToHead(gameState, isMoveSafe);
+  
+  // Try to move toward food
+  const foodMove = moveTowardFood(gameState, isMoveSafe);
+  if (foodMove) {
+    console.log(`MOVE ${gameState.turn}: Moving ${foodMove} toward food`);
+    return { move: foodMove };
   }
-
-  // TODO: Step 1 - Prevent your Battlesnake from moving out of bounds
-  // boardWidth = gameState.board.width;
-  // boardHeight = gameState.board.height;
-
-  // TODO: Step 2 - Prevent your Battlesnake from colliding with itself
-  // myBody = gameState.you.body;
-
-  // TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
-  // opponents = gameState.board.snakes;
-
+  
   // Are there any safe moves left?
   const safeMoves = Object.keys(isMoveSafe).filter(key => isMoveSafe[key]);
-  if (safeMoves.length == 0) {
+  if (safeMoves.length === 0) {
     console.log(`MOVE ${gameState.turn}: No safe moves detected! Moving down`);
     return { move: "down" };
   }
-
+  
   // Choose a random move from the safe moves
   const nextMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
-
-  // TODO: Step 4 - Move towards food instead of random, to regain health and survive longer
-  // food = gameState.board.food;
-
-  console.log(`MOVE ${gameState.turn}: ${nextMove}`)
+  console.log(`MOVE ${gameState.turn}: Moving ${nextMove}`);
   return { move: nextMove };
 }
 
