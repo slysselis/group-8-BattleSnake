@@ -21,10 +21,10 @@ function info() {
 
   return {
     apiversion: "1",
-    author: "Sokos",       // Battlesnake Username
-    color: "#0f0e42", // snake color
-    head: "cosmic-horror",  // snake head
-    tail: "hook",  // snake tail
+    author: "Antonis",       // Battlesnake Username
+    color: "#ee370f", // snake color
+    head: "dragon",  // snake head
+    tail: "swirl",  // snake tail
   };
 }
 
