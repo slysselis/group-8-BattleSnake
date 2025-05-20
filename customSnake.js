@@ -22,7 +22,7 @@ function info() {
   return {
     apiversion: "1",
     author: "Antonis",       // Battlesnake Username
-    color: "#ee370f", // snake color
+    color: "#f4260a", // snake color
     head: "dragon",  // snake head
     tail: "swirl",  // snake tail
   };
