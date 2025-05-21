@@ -29,10 +29,10 @@ function info() {
 
   return {
     apiversion: "1",
-    author: "Sokos",       // Battlesnake Username
-    color: "#5271d0",      // snake color
-    head: "cosmic-horror", // snake head
-    tail: "hook",          // snake tail
+	author: "Antonis",       // Battlesnake Username
+    color: "f4260a", // snake color
+    head: "dragon",  // snake head
+    tail: "swirl",  // snake tail
   };
 }
 
