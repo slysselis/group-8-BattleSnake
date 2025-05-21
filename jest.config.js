@@ -1,5 +1,8 @@
 // jest.config.js
 export default {
+  // Specify that we're using ESM
+  type: 'module',
+  
   // Use Node.js environment
   testEnvironment: 'node',
   
@@ -23,12 +26,17 @@ export default {
     '!node_modules/**'
   ],
   
-  // Transform ESM imports for Jest
-  transform: {},
-  
-  // ESM support
+  // For ESM support
   extensionsToTreatAsEsm: ['.js'],
+  
+  // Required for ES modules with Jest
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
+  
+  // Transform is not needed for ESM modules in Node.js
+  transform: {},
+  
+  // Set this higher if tests timeout
+  testTimeout: 10000
 };
