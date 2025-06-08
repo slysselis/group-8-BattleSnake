@@ -20,7 +20,7 @@ import moveTowardFood from './moveTowardFood.js';
 import headToHead from './headToHead.js';
 import allowTailMovement from './allowTailMovement.js';
 import chooseMoveWithFloodFill from './chooseMoveWithFloodFill.js';
-
+import headToHead from './hunt_smaller_snakes.js';
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
