@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: index_documented.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: index_documented.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Welcome to
+// __________         __    __  .__                               __
+// \______   \_____ _/  |__/  |_|  |   ____   ______ ____ _____  |  | __ ____
+//  |    |  _/\__  \\   __\   __\  | _/ __ \ /  ___//    \\__  \ |  |/ // __ \
+//  |    |   \ / __ \|  |  |  | |  |_\  ___/ \___ \|   |  \/ __ \|    &lt;\  ___/
+//  |________/(______/__|  |__| |____/\_____>______>___|__(______/__|__\\_____>
+//
+// This file can be a nice home for your Battlesnake logic and helper functions.
+//
+// To get you started we've included code to prevent your Battlesnake from moving backwards.
+// For more info see docs.battlesnake.com
+
+import runServer from './server.js';
+import chalk from 'chalk';
+import preventBorderCollision from './preventBorderCollision.js';
+import preventSelfCollision from './preventSelfCollision.js';
+import preventSnakeCollision from './preventSnakeCollision.js';
+import preventBackwardsMovement from './preventBackwardsMovement.js';
+import moveTowardFood from './moveTowardFood.js';
+import headToHead from './headToHead.js';
+import allowTailMovement from './allowTailMovement.js';
+import chooseMoveWithFloodFill from './chooseMoveWithFloodFill.js';
+
+/**
+ * Returns static information about your Battlesnake
+ * Called when you create your Battlesnake on play.battlesnake.com
+ * @returns {Object} Snake configuration object
+ * @property {string} apiversion - Battlesnake API version
+ * @property {string} author - Your Battlesnake username
+ * @property {string} color - Snake color in hex format
+ * @property {string} head - Snake head style
+ * @property {string} tail - Snake tail style
+ * @example
+ * // Returns snake appearance configuration
+ * const config = info();
+ * // Result: { apiversion: "1", author: "Antonis", color: "f4260a", ... }
+ */
+function info() {
+  console.log("INFO");
+
+  return {
+    apiversion: "1",
+	author: "Antonis",       // Battlesnake Username
+    color: "f4260a", // snake color
+    head: "dragon",  // snake head
+    tail: "swirl",  // snake tail
+  };
+}
+
+/**
+ * Called when your Battlesnake begins a game
+ * @param {Object} gameState - The initial game state from Battlesnake API
+ * @param {number} gameState.game.id - Unique game identifier
+ * @param {Object} gameState.board - The game board configuration
+ * @param {Object} gameState.you - Your snake's initial data
+ * @example
+ * // Game start notification
+ * start(gameState);
+ * // Logs: "GAME START"
+ */
+function start(gameState) {
+  console.log("GAME START");
+}
+
+/**
+ * Called when your Battlesnake finishes a game
+ * @param {Object} gameState - The final game state from Battlesnake API
+ * @param {number} gameState.turn - Final turn number
+ * @param {Object} gameState.you - Your snake's final data
+ * @example
+ * // Game end notification
+ * end(gameState);
+ * // Logs: "GAME OVER"
+ */
+function end(gameState) {
+  console.log("GAME OVER\n");
+}
+
+/**
+ * Called on every turn to determine your next move
+ * Implements comprehensive move logic including collision avoidance, flood fill analysis, and food seeking
+ * @param {Object} gameState - The current game state from Battlesnake API
+ * @param {number} gameState.turn - Current turn number
+ * @param {Object} gameState.you - Your snake's data
+ * @param {Array} gameState.you.body - Array of coordinate objects representing snake body
+ * @param {number} gameState.you.health - Current health (0-100)
+ * @param {number} gameState.you.length - Current snake length
+ * @param {Object} gameState.board - The game board data
+ * @param {number} gameState.board.width - Width of the game board
+ * @param {number} gameState.board.height - Height of the game board
+ * @param {Array} gameState.board.food - Array of food coordinate objects
+ * @param {Array} gameState.board.snakes - Array of all snakes on the board
+ * @returns {Object} Move decision object
+ * @property {string} move - The chosen direction ("up", "down", "left", or "right")
+ * @example
+ * // Make a move decision
+ * const decision = move(gameState);
+ * // Result: { move: "up" }
+ */
+function move(gameState) {
+  console.log(`MOVE ${gameState.turn}: Beginning turn`);
+
+  // Initialize all moves as safe
+  let isMoveSafe = {
+    up: true,
+    down: true,
+    left: true,
+    right: true
+  };
+
+  // Apply all collision avoidance logic in order of importance
+  isMoveSafe = preventBackwardsMovement(gameState, isMoveSafe);
+  isMoveSafe = preventBorderCollision(gameState, isMoveSafe);
+  isMoveSafe = preventSelfCollision(gameState, isMoveSafe);
+  isMoveSafe = preventSnakeCollision(gameState, isMoveSafe);
+  isMoveSafe = headToHead(gameState, isMoveSafe);
+  isMoveSafe = allowTailMovement(gameState, isMoveSafe); // if needed
+
+  // Get flood fill scores for each safe move to evaluate available space
+  const floodScores = chooseMoveWithFloodFill(gameState, isMoveSafe);
+
+  // Find the move with the most available space
+  const bestFloodMove = Object.entries(floodScores)
+    .sort((a, b) => b[1] - a[1]) // descending order by space available
+    .map(entry => entry[0])[0];
+
+  // Check if we should prioritize food
+  const foodMove = moveTowardFood(gameState, isMoveSafe);
+
+  // Prefer food if health is low or available space is limited
+  if (gameState.you.health &lt; 70 || (bestFloodMove &amp;&amp; floodScores[bestFloodMove] &lt; 10)) {
+    if (foodMove) {
+      console.log(`MOVE ${gameState.turn}: Preferring food → ${foodMove}`);
+      return { move: foodMove };
+    }
+  }
+
+  // Use flood fill move if available
+  if (bestFloodMove) {
+    console.log(`MOVE ${gameState.turn}: Flood fill → ${bestFloodMove}`);
+    return { move: bestFloodMove };
+  }
+
+  // Fallback: pick any remaining safe move randomly
+  const safeMoves = Object.keys(isMoveSafe).filter(key => isMoveSafe[key]);
+  if (safeMoves.length === 0) {
+    console.log(`MOVE ${gameState.turn}: No safe moves! Going down.`);
+    return { move: "down" };
+  }
+
+  const randomMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+  console.log(`MOVE ${gameState.turn}: Random safe move → ${randomMove}`);
+  return { move: randomMove };
+}
+
+// Start the Battlesnake server with our handler functions
+runServer({
+  info: info,
+  start: start,
+  move: move,
+  end: end
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#avoidHeadToHead">avoidHeadToHead</a></li><li><a href="global.html#chooseMoveWithFloodFill">chooseMoveWithFloodFill</a></li><li><a href="global.html#end">end</a></li><li><a href="global.html#floodFill">floodFill</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#moveTowardFood">moveTowardFood</a></li><li><a href="global.html#preventBackwardsMovement">preventBackwardsMovement</a></li><li><a href="global.html#preventBorderCollision">preventBorderCollision</a></li><li><a href="global.html#preventSelfCollision">preventSelfCollision</a></li><li><a href="global.html#preventSnakeCollision">preventSnakeCollision</a></li><li><a href="global.html#start">start</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Sun Jun 08 2025 09:59:30 GMT+0300 (Θερινή ώρα Ανατολικής Ευρώπης)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

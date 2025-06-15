@@ -1,0 +1,44 @@
+function allowTailMovement(gameState, isMoveSafe) {
+  const myHead = gameState.you.body[0];
+  const opponents = gameState.board.snakes.filter(snake => snake.id !== gameState.you.id);
+  const food = gameState.board.food;
+
+  // Check each opponent snake
+  opponents.forEach(snake => {
+    const enemyTail = snake.body[snake.body.length - 1];
+    const enemySecondToLast = snake.body.length > 1 ? snake.body[snake.body.length - 2] : null;
+    
+    // Check if enemy snake just ate (tail and second-to-last in same position)
+    // Or if it's about to eat (head adjacent to food)
+    const justAte = enemySecondToLast && 
+                    enemyTail.x === enemySecondToLast.x && 
+                    enemyTail.y === enemySecondToLast.y;
+    
+    const enemyHead = snake.body[0];
+    const aboutToEat = food.some(foodItem => 
+      (Math.abs(enemyHead.x - foodItem.x) + Math.abs(enemyHead.y - foodItem.y)) === 1
+    );
+    
+    // If snake is NOT about to eat and hasn't just eaten, its tail will move
+    // So we can safely move into its current tail position
+    if (!aboutToEat && !justAte) {
+      // Check if the tail is in each possible move direction
+      if (enemyTail.x === myHead.x - 1 && enemyTail.y === myHead.y) {
+        isMoveSafe.left = true; 
+      }
+      if (enemyTail.x === myHead.x + 1 && enemyTail.y === myHead.y) {
+        isMoveSafe.right = true; 
+      }
+      if (enemyTail.y === myHead.y - 1 && enemyTail.x === myHead.x) {
+        isMoveSafe.down = true; 
+      }
+      if (enemyTail.y === myHead.y + 1 && enemyTail.x === myHead.x) {
+        isMoveSafe.up = true; 
+      }
+    }
+  });
+
+  return isMoveSafe;
+}
+
+export default allowTailMovement;

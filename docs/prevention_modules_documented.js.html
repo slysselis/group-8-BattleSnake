@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: prevention_modules_documented.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: prevention_modules_documented.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// preventBackwardsMovement.js
+/**
+ * Prevents the snake from moving backwards into its own neck
+ * @param {Object} gameState - The current game state from Battlesnake API
+ * @param {Object} gameState.you - Your snake's data
+ * @param {Array} gameState.you.body - Array of coordinate objects representing snake body
+ * @param {Object} isMoveSafe - Object indicating which moves are currently safe
+ * @param {boolean} isMoveSafe.up - Whether moving up is safe
+ * @param {boolean} isMoveSafe.down - Whether moving down is safe
+ * @param {boolean} isMoveSafe.left - Whether moving left is safe
+ * @param {boolean} isMoveSafe.right - Whether moving right is safe
+ * @returns {Object} Updated isMoveSafe object with backwards movement marked as unsafe
+ * @example
+ * // Prevent moving backwards into neck
+ * const safeMoves = preventBackwardsMovement(gameState, isMoveSafe);
+ * // If neck is to the left, safeMoves.left will be false
+ */
+function preventBackwardsMovement(gameState, isMoveSafe) {
+  const myHead = gameState.you.body[0];
+  const myNeck = gameState.you.body[1];
+
+  // Prevent the snake from moving backwards into its neck
+  if (myNeck.x &lt; myHead.x) {        // Neck is left of head, don't move left
+    isMoveSafe.left = false;
+  } else if (myNeck.x > myHead.x) { // Neck is right of head, don't move right
+    isMoveSafe.right = false;
+  } else if (myNeck.y &lt; myHead.y) { // Neck is below head, don't move down
+    isMoveSafe.down = false;
+  } else if (myNeck.y > myHead.y) { // Neck is above head, don't move up
+    isMoveSafe.up = false;
+  }
+
+  return isMoveSafe;
+}
+
+// preventBorderCollision.js
+/**
+ * Prevents the snake from moving outside the game board boundaries
+ * @param {Object} gameState - The current game state from Battlesnake API
+ * @param {Object} gameState.board - The game board data
+ * @param {number} gameState.board.width - Width of the game board
+ * @param {number} gameState.board.height - Height of the game board
+ * @param {Object} gameState.you - Your snake's data
+ * @param {Array} gameState.you.body - Array of coordinate objects representing snake body
+ * @param {Object} isMoveSafe - Object indicating which moves are currently safe
+ * @returns {Object} Updated isMoveSafe object with border collisions marked as unsafe
+ * @example
+ * // Prevent hitting walls
+ * const safeMoves = preventBorderCollision(gameState, isMoveSafe);
+ * // If snake is at left edge, safeMoves.left will be false
+ */
+function preventBorderCollision(gameState, isMoveSafe) {
+  const boardWidth = gameState.board.width;
+  const boardHeight = gameState.board.height;
+  const myHead = gameState.you.body[0];
+
+  // Prevent collisions with the board boundaries
+  if (myHead.x === 0) {
+    isMoveSafe.left = false;
+  }
+  if (myHead.x === boardWidth - 1) {
+    isMoveSafe.right = false;
+  }
+  if (myHead.y === 0) {
+    isMoveSafe.down = false;
+  }
+  if (myHead.y === boardHeight - 1) {
+    isMoveSafe.up = false;
+  }
+
+  return isMoveSafe;
+}
+
+// preventSelfCollision.js
+/**
+ * Prevents the snake from colliding with its own body
+ * @param {Object} gameState - The current game state from Battlesnake API
+ * @param {Object} gameState.you - Your snake's data
+ * @param {Array} gameState.you.body - Array of coordinate objects representing snake body
+ * @param {Object} isMoveSafe - Object indicating which moves are currently safe
+ * @returns {Object} Updated isMoveSafe object with self-collision moves marked as unsafe
+ * @example
+ * // Prevent self-collision
+ * const safeMoves = preventSelfCollision(gameState, isMoveSafe);
+ * // Moves that would hit own body segments are marked false
+ */
+function preventSelfCollision(gameState, isMoveSafe) {
+  const myHead = gameState.you.body[0];
+  const myBody = gameState.you.body;
+
+  // Check each body segment for potential collision
+  myBody.forEach(segment => {
+    if (segment.x === myHead.x - 1 &amp;&amp; segment.y === myHead.y) {
+      isMoveSafe.left = false;
+    }
+    if (segment.x === myHead.x + 1 &amp;&amp; segment.y === myHead.y) {
+      isMoveSafe.right = false;
+    }
+    if (segment.y === myHead.y - 1 &amp;&amp; segment.x === myHead.x) {
+      isMoveSafe.down = false;
+    }
+    if (segment.y === myHead.y + 1 &amp;&amp; segment.x === myHead.x) {
+      isMoveSafe.up = false;
+    }
+  });
+
+  return isMoveSafe;
+}
+
+// preventSnakeCollision.js
+/**
+ * Prevents collision with other snakes on the board
+ * @param {Object} gameState - The current game state from Battlesnake API
+ * @param {Object} gameState.you - Your snake's data
+ * @param {Array} gameState.you.body - Array of coordinate objects representing your snake body
+ * @param {string} gameState.you.id - Unique identifier for your snake
+ * @param {Object} gameState.board - The game board data
+ * @param {Array} gameState.board.snakes - Array of all snakes on the board
+ * @param {Object} isMoveSafe - Object indicating which moves are currently safe
+ * @returns {Object} Updated isMoveSafe object with snake collision moves marked as unsafe
+ * @example
+ * // Prevent hitting other snakes
+ * const safeMoves = preventSnakeCollision(gameState, isMoveSafe);
+ * // Moves that would hit opponent snake bodies are marked false
+ */
+function preventSnakeCollision(gameState, isMoveSafe) {
+  const myHead = gameState.you.body[0];
+  const opponents = gameState.board.snakes;
+
+  // Check collision with all opponent snakes
+  opponents.forEach(snake => {
+    // Skip checking our own snake
+    if (snake.id === gameState.you.id) {
+      return;
+    }
+
+    // Check each segment of opponent snakes
+    snake.body.forEach(segment => {
+      if (segment.x === myHead.x - 1 &amp;&amp; segment.y === myHead.y) {
+        isMoveSafe.left = false;
+      }
+      if (segment.x === myHead.x + 1 &amp;&amp; segment.y === myHead.y) {
+        isMoveSafe.right = false;
+      }
+      if (segment.y === myHead.y - 1 &amp;&amp; segment.x === myHead.x) {
+        isMoveSafe.down = false;
+      }
+      if (segment.y === myHead.y + 1 &amp;&amp; segment.x === myHead.x) {
+        isMoveSafe.up = false;
+      }
+    });
+  });
+
+  return isMoveSafe;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#avoidHeadToHead">avoidHeadToHead</a></li><li><a href="global.html#chooseMoveWithFloodFill">chooseMoveWithFloodFill</a></li><li><a href="global.html#end">end</a></li><li><a href="global.html#floodFill">floodFill</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#moveTowardFood">moveTowardFood</a></li><li><a href="global.html#preventBackwardsMovement">preventBackwardsMovement</a></li><li><a href="global.html#preventBorderCollision">preventBorderCollision</a></li><li><a href="global.html#preventSelfCollision">preventSelfCollision</a></li><li><a href="global.html#preventSnakeCollision">preventSnakeCollision</a></li><li><a href="global.html#start">start</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Sun Jun 08 2025 09:59:30 GMT+0300 (Θερινή ώρα Ανατολικής Ευρώπης)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
