@@ -9,11 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - uses: railwayapp/cli-action@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+          node-version: 18
 
-      - name: Deploy app to Railway
-        run: railway up
+      - name: Install Railway CLI
+        run: npm install -g railway
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --yes
