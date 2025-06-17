@@ -21,6 +21,7 @@ import headToHead from './headToHead.js';
 import allowTailMovement from './allowTailMovement.js';
 import chooseMoveWithFloodFill from './chooseMoveWithFloodFill.js';
 import headToHead from './hunt_smaller_snakes.js';
+import aStarToFood from './aStarToFood.js';
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
@@ -29,7 +30,7 @@ function info() {
 
   return {
     apiversion: "1",
-	author: "Antonis",       // Battlesnake Username
+    author: "Antonis",       // Battlesnake Username
     color: "f4260a", // snake color
     head: "dragon",  // snake head
     tail: "swirl",  // snake tail
@@ -76,8 +77,16 @@ function move(gameState) {
     .sort((a, b) => b[1] - a[1]) // descending order
     .map(entry => entry[0])[0];
 
-  // Try to get a food move
-  const foodMove = moveTowardFood(gameState, isMoveSafe);
+  let foodMove = null;
+  if (gameState.you.health < 70) {
+    console.log(`MOVE ${gameState.turn}: Low health (${gameState.you.health}), seeking food with A*`);
+    foodMove = aStarToFood(gameState, isMoveSafe);
+
+    // If A* didn't find a safe path, try simple food logic
+    if (!foodMove) {
+      foodMove = moveTowardFood(gameState, isMoveSafe);
+    }
+  }
 
   // Prefer food if low health or space is tight
   if (gameState.you.health < 70 || (bestFloodMove && floodScores[bestFloodMove] < 10)) {
