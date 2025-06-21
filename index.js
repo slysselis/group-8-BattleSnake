@@ -10,8 +10,10 @@
 // To get you started we've included code to prevent your Battlesnake from moving backwards.
 // For more info see docs.battlesnake.com
 
+// Import server and required modules
 import runServer from './server.js';
 import chalk from 'chalk';
+// Import all safety and strategy modules
 import preventBorderCollision from './preventBorderCollision.js';
 import preventSelfCollision from './preventSelfCollision.js';
 import preventSnakeCollision from './preventSnakeCollision.js';
@@ -20,8 +22,9 @@ import moveTowardFood from './moveTowardFood.js';
 import headToHead from './headToHead.js';
 import allowTailMovement from './allowTailMovement.js';
 import chooseMoveWithFloodFill from './chooseMoveWithFloodFill.js';
-import headToHead from './hunt_smaller_snakes.js';
+import hunt_smaller_snakes from './hunt_smaller_snakes.js';
 import aStarToFood from './aStarToFood.js';
+
 // info is called when you create your Battlesnake on play.battlesnake.com
 // and controls your Battlesnake's appearance
 // TIP: If you open your Battlesnake URL in a browser you should see this data
@@ -31,9 +34,9 @@ function info() {
   return {
     apiversion: "1",
     author: "Antonis",       // Battlesnake Username
-    color: "f4260a", // snake color
-    head: "dragon",  // snake head
-    tail: "swirl",  // snake tail
+    color: "f4260a", // snake color (orange-red)
+    head: "dragon",  // snake head style
+    tail: "swirl",  // snake tail style
   };
 }
 
@@ -53,7 +56,7 @@ function end(gameState) {
 function move(gameState) {
   console.log(`MOVE ${gameState.turn}: Beginning turn`);
 
-  // Determine safe moves
+  // Initialize all moves as safe initially
   let isMoveSafe = {
     up: true,
     down: true,
@@ -61,26 +64,27 @@ function move(gameState) {
     right: true
   };
 
-  // Apply all avoidance logic
-  isMoveSafe = preventBackwardsMovement(gameState, isMoveSafe);
-  isMoveSafe = preventBorderCollision(gameState, isMoveSafe);
-  isMoveSafe = preventSelfCollision(gameState, isMoveSafe);
-  isMoveSafe = preventSnakeCollision(gameState, isMoveSafe);
-  isMoveSafe = headToHead(gameState, isMoveSafe);
-  isMoveSafe = allowTailMovement(gameState, isMoveSafe); // if needed
+  // Apply all avoidance logic to mark unsafe moves
+  isMoveSafe = preventBackwardsMovement(gameState, isMoveSafe); // Don't reverse direction
+  isMoveSafe = preventBorderCollision(gameState, isMoveSafe); // Avoid walls
+  isMoveSafe = preventSelfCollision(gameState, isMoveSafe); // Don't hit own body
+  isMoveSafe = preventSnakeCollision(gameState, isMoveSafe); // Avoid other snakes
+  isMoveSafe = headToHead(gameState, isMoveSafe); // Avoid head-to-head with bigger snakes
+  isMoveSafe = allowTailMovement(gameState, isMoveSafe); // Allow moving to tail if it will move
 
-  // Get flood fill scores for each safe move
+  // Get flood fill scores for each safe move (measures accessible space)
   const floodScores = chooseMoveWithFloodFill(gameState, isMoveSafe);
 
-  // Find the best move based on flood fill
+  // Find the best move based on flood fill (most accessible space)
   const bestFloodMove = Object.entries(floodScores)
-    .sort((a, b) => b[1] - a[1]) // descending order
-    .map(entry => entry[0])[0];
+    .sort((a, b) => b[1] - a[1]) // Sort by score descending
+    .map(entry => entry[0])[0]; // Get direction with highest score
 
   let foodMove = null;
+  // Seek food when health is low (below 70)
   if (gameState.you.health < 70) {
     console.log(`MOVE ${gameState.turn}: Low health (${gameState.you.health}), seeking food with A*`);
-    foodMove = aStarToFood(gameState, isMoveSafe);
+    foodMove = aStarToFood(gameState, isMoveSafe); // Try A* pathfinding to food
 
     // If A* didn't find a safe path, try simple food logic
     if (!foodMove) {
@@ -88,7 +92,7 @@ function move(gameState) {
     }
   }
 
-  // Prefer food if low health or space is tight
+  // Prefer food if low health or space is tight (less than 10 accessible spaces)
   if (gameState.you.health < 70 || (bestFloodMove && floodScores[bestFloodMove] < 10)) {
     if (foodMove) {
       console.log(`MOVE ${gameState.turn}: Preferring food → ${foodMove}`);
@@ -96,25 +100,25 @@ function move(gameState) {
     }
   }
 
-  // Otherwise use flood fill move
+  // Otherwise use flood fill move (prioritize space)
   if (bestFloodMove) {
     console.log(`MOVE ${gameState.turn}: Flood fill → ${bestFloodMove}`);
     return { move: bestFloodMove };
   }
 
-  // Fallback: pick any remaining safe move
+  // Fallback: pick any remaining safe move randomly
   const safeMoves = Object.keys(isMoveSafe).filter(key => isMoveSafe[key]);
   if (safeMoves.length === 0) {
     console.log(`MOVE ${gameState.turn}: No safe moves! Going down.`);
-    return { move: "down" };
+    return { move: "down" }; // Last resort move
   }
 
   const randomMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
   console.log(`MOVE ${gameState.turn}: Random safe move → ${randomMove}`);
   return { move: randomMove };
-
 }
 
+// Start the Battlesnake server with our functions
 runServer({
   info: info,
   start: start,
