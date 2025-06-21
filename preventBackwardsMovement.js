@@ -1,5 +1,8 @@
+// Function to prevent the snake from moving backwards into its own neck
 function preventBackwardsMovement(gameState, isMoveSafe) {
+  // Get the current head position (first element of body array)
   const myHead = gameState.you.body[0];
+  // Get the neck position (second element of body array)
   const myNeck = gameState.you.body[1];
 
   // Prevent the snake from moving backwards
@@ -13,7 +16,9 @@ function preventBackwardsMovement(gameState, isMoveSafe) {
     isMoveSafe.up = false;
   }
 
+  // Return the updated move safety object
   return isMoveSafe;
 }
 
+// Export the function as the default export for use in other modules
 export default preventBackwardsMovement;
